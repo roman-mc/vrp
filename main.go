@@ -123,25 +123,15 @@ func main() {
 	loads := readLoads(filepath)
 	drivers := assignLoadsToDrivers(loads)
 
-	//totalNumberOfDrivenMinutes := float64(0) // DEBUG
 	for _, driver := range drivers {
 		var loadIDs []string
-		//var drivenMinutes float64 // DEBUG
-		//lastPoint := Point{0, 0} // DEBUG
 
 		for _, load := range driver.loads {
-			//drivenMinutes += euclideanDistance(lastPoint, load.pickup) + load.distance // DEBUG
-			//lastPoint = load.dropoff // DEBUG
 			loadIDs = append(loadIDs, strconv.Itoa(load.id))
 		}
 
-		//drivenMinutes += euclideanDistance(lastPoint, Point{0, 0}) // DEBUG
-		//totalNumberOfDrivenMinutes += drivenMinutes // DEBUG
-		//fmt.Println("driven minutes:", drivenMinutes, driver.distance) // DEBUG
 		fmt.Printf("[%s]\n", strings.Join(loadIDs, ","))
 	}
-
-	//fmt.Printf("total driven minutes: %v, total drivers: %v, total cost: %v", totalNumberOfDrivenMinutes, len(drivers), float64(500*len(drivers))+totalNumberOfDrivenMinutes) // DEBUG
 }
 
 func assignLoadsToDrivers(loads []Load) []Driver {
