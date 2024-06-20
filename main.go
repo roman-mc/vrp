@@ -93,14 +93,13 @@ func readLoads(filepath string) []Load {
 
 func sortForPoint(loads []Load, point Point) {
 	sort.Slice(loads, func(i, j int) bool {
-		if loads[i].isUsed && loads[j].isUsed { // both unused // it's actually mistype and should be used line below, but somehow results are much better with this mistype
-			//if !loads[i].isUsed && !loads[j].isUsed { // both unused
+		if loads[i].isUsed && loads[j].isUsed { // both unused
 			return false
 		}
-		if loads[i].isUsed { // only one in use
+		if loads[i].isUsed { // only second one in use
 			return false
 		}
-		if loads[j].isUsed { // only second one in use
+		if loads[j].isUsed { // only first in use
 			return true
 		}
 
@@ -121,8 +120,10 @@ func main() {
 
 	filepath := os.Args[1]
 	loads := readLoads(filepath)
+
 	drivers := assignLoadsToDrivers(loads)
 
+	//<<<<<<<
 	for _, driver := range drivers {
 		var loadIDs []string
 
@@ -132,6 +133,27 @@ func main() {
 
 		fmt.Printf("[%s]\n", strings.Join(loadIDs, ","))
 	}
+	//======= // DEBUG
+	//	totalNumberOfDrivenMinutes := float64(0) // DEBUG
+	//	for _, driver := range drivers {
+	//		var loadIDs []string
+	//		var drivenMinutes float64 // DEBUG
+	//		lastPoint := Point{0, 0}  // DEBUG
+	//
+	//		for _, load := range driver.loads {
+	//			drivenMinutes += euclideanDistance(lastPoint, load.pickup) + load.distance // DEBUG
+	//			lastPoint = load.dropoff                                                   // DEBUG
+	//			loadIDs = append(loadIDs, strconv.Itoa(load.id))
+	//		}
+	//
+	//		drivenMinutes += euclideanDistance(lastPoint, Point{0, 0})     // DEBUG
+	//		totalNumberOfDrivenMinutes += drivenMinutes                    // DEBUG
+	//		fmt.Println("driven minutes:", drivenMinutes, driver.distance) // DEBUG
+	//		fmt.Printf("[%s]\n", strings.Join(loadIDs, ","))
+	//	}
+	//
+	//	fmt.Printf("total driven minutes: %v, total drivers: %v, total cost: %v", totalNumberOfDrivenMinutes, len(drivers), float64(500*len(drivers))+totalNumberOfDrivenMinutes) // DEBUG
+	//>>>>>>>
 }
 
 func assignLoadsToDrivers(loads []Load) []Driver {
@@ -170,6 +192,7 @@ func assignLoadsToDrivers(loads []Load) []Driver {
 		totalDistance += euclideanDistance(dropoffPoint, ZeroPoint) // don't forget to count way home
 		driver := Driver{driverID, driverLoads, totalDistance}
 		drivers = append(drivers, driver)
+		sortForPoint(loads, ZeroPoint) // could be optimized by reducing slice loads
 		driverID++
 	}
 
