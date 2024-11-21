@@ -21,7 +21,6 @@ type Load struct {
 	pickup   Point
 	dropoff  Point
 	distance float64
-	isUsed   bool
 }
 
 type Driver struct {
@@ -93,16 +92,6 @@ func readLoads(filepath string) []Load {
 
 func sortForPoint(loads []Load, point Point) {
 	sort.Slice(loads, func(i, j int) bool {
-		if loads[i].isUsed && loads[j].isUsed { // both unused
-			return false
-		}
-		if loads[i].isUsed { // only second one in use
-			return false
-		}
-		if loads[j].isUsed { // only first in use
-			return true
-		}
-
 		d1, d2 := euclideanDistance(point, loads[i].pickup), euclideanDistance(point, loads[j].pickup)
 
 		if d1 < d2 {
@@ -134,45 +123,40 @@ func main() {
 		fmt.Printf("[%s]\n", strings.Join(loadIDs, ","))
 	}
 	//======= // DEBUG
-	//	totalNumberOfDrivenMinutes := float64(0) // DEBUG
-	//	for _, driver := range drivers {
-	//		var loadIDs []string
-	//		var drivenMinutes float64 // DEBUG
-	//		lastPoint := Point{0, 0}  // DEBUG
+	//totalNumberOfDrivenMinutes := float64(0) // DEBUG
+	//for _, driver := range drivers {
+	//	var loadIDs []string
+	//	var drivenMinutes float64 // DEBUG
+	//	lastPoint := Point{0, 0}  // DEBUG
 	//
-	//		for _, load := range driver.loads {
-	//			drivenMinutes += euclideanDistance(lastPoint, load.pickup) + load.distance // DEBUG
-	//			lastPoint = load.dropoff                                                   // DEBUG
-	//			loadIDs = append(loadIDs, strconv.Itoa(load.id))
-	//		}
-	//
-	//		drivenMinutes += euclideanDistance(lastPoint, Point{0, 0})     // DEBUG
-	//		totalNumberOfDrivenMinutes += drivenMinutes                    // DEBUG
-	//		fmt.Println("driven minutes:", drivenMinutes, driver.distance) // DEBUG
-	//		fmt.Printf("[%s]\n", strings.Join(loadIDs, ","))
+	//	for _, load := range driver.loads {
+	//		drivenMinutes += euclideanDistance(lastPoint, load.pickup) + load.distance // DEBUG
+	//		lastPoint = load.dropoff                                                   // DEBUG
+	//		loadIDs = append(loadIDs, strconv.Itoa(load.id))
 	//	}
 	//
-	//	fmt.Printf("total driven minutes: %v, total drivers: %v, total cost: %v", totalNumberOfDrivenMinutes, len(drivers), float64(500*len(drivers))+totalNumberOfDrivenMinutes) // DEBUG
+	//	drivenMinutes += euclideanDistance(lastPoint, Point{0, 0})     // DEBUG
+	//	totalNumberOfDrivenMinutes += drivenMinutes                    // DEBUG
+	//	fmt.Println("driven minutes:", drivenMinutes, driver.distance) // DEBUG
+	//	fmt.Printf("[%s]\n", strings.Join(loadIDs, ","))
+	//}
+	//
+	//fmt.Printf("total driven minutes: %v, total drivers: %v, total cost: %v", totalNumberOfDrivenMinutes, len(drivers), float64(500*len(drivers))+totalNumberOfDrivenMinutes) // DEBUG
 	//>>>>>>>
 }
 
 func assignLoadsToDrivers(loads []Load) []Driver {
 	var drivers []Driver
 	driverID := 1
-	usedLoadsCount := 0
 	sortForPoint(loads, ZeroPoint)
 
-	for len(loads) != usedLoadsCount {
+	for len(loads) > 0 {
 		var driverLoads []Load
 		var totalDistance float64
 
 		dropoffPoint := ZeroPoint
 
-		for i := 0; i < len(loads) && usedLoadsCount < len(loads); i++ {
-			if loads[i].isUsed {
-				continue
-			}
-
+		for i := 0; i < len(loads); i++ {
 			if totalDistance+ // prev distance
 				euclideanDistance(dropoffPoint, loads[i].pickup)+ // from prev point to next point
 				loads[i].distance+ // load distance
@@ -182,8 +166,8 @@ func assignLoadsToDrivers(loads []Load) []Driver {
 				totalDistance += euclideanDistance(dropoffPoint, loads[i].pickup) + loads[i].distance
 
 				dropoffPoint = loads[i].dropoff
-				loads[i].isUsed = true
-				usedLoadsCount++
+				loads[i], loads[len(loads)-1] = loads[len(loads)-1], loads[i]
+				loads = loads[:len(loads)-1]
 				sortForPoint(loads, dropoffPoint) // could be optimized by reducing slice loads
 				i = -1
 			}
